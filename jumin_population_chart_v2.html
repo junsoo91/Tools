@@ -1160,7 +1160,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     csvBuffers.forEach(buf => processCSVText(new TextDecoder('euc-kr').decode(buf)));
     // GeoJSON 로드 & 처리
     setStatus('경계 데이터 로드 중...');
-    const geoRes = await fetch(`${DATA_BOUNDARY}/HangJeongDong_vworld.geojson`);
+    // data_boundary 폴더에서 GeoJSON 파일 자동 탐지
+    const boundaryApi = await fetch('https://api.github.com/repos/junsoo91/Tools/contents/data_boundary').then(r => r.json());
+    const geoFile = boundaryApi.find(f => f.name.endsWith('.geojson'));
+    if (!geoFile) throw new Error('GeoJSON 파일을 찾을 수 없습니다');
+    const geoRes = await fetch(`${DATA_BOUNDARY}/${geoFile.name}`);
     if (!geoRes.ok) throw new Error('GeoJSON 로드 실패');
     const rawGeo = await geoRes.json();
     setStatus('경계 데이터 처리 중...');
