@@ -1130,7 +1130,8 @@ function processRawGeoJSON(raw) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const DATA = 'data';
+  const DATA_POP = 'data_pop';
+  const DATA_BOUNDARY = 'data_boundary';
   const CSV_FILES = [
     '200812_201012_연령별인구현황_연간.csv',
     '201112_201312_연령별인구현황_연간.csv',
@@ -1143,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // CSV 순차 로드 & 파싱
     for (let i=0; i<CSV_FILES.length; i++) {
       setStatus(`인구 데이터 로드 중... (${i+1}/${CSV_FILES.length})`);
-      const res = await fetch(`${DATA}/${CSV_FILES[i]}`);
+      const res = await fetch(`${DATA_POP}/${CSV_FILES[i]}`);
       if (!res.ok) throw new Error(`${CSV_FILES[i]} 로드 실패`);
       const buf = await res.arrayBuffer();
       const text = new TextDecoder('euc-kr').decode(buf);
@@ -1151,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     // GeoJSON 로드 & 처리
     setStatus('경계 데이터 로드 중...');
-    const geoRes = await fetch(`${DATA}/HangJeongDong_vworld.geojson`);
+    const geoRes = await fetch(`${DATA_BOUNDARY}/HangJeongDong_vworld.geojson`);
     if (!geoRes.ok) throw new Error('GeoJSON 로드 실패');
     const rawGeo = await geoRes.json();
     setStatus('경계 데이터 처리 중...');
