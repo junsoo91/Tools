@@ -742,7 +742,7 @@ function updateTrend() {
       scales: {
         x: { grid: { color: '#f1f5f9' } },
         y: { grid: { color: '#f1f5f9' },
-          ticks: { callback: v => (v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e4 ? (v/1e4).toFixed(0)+'만' : v.toLocaleString()) } }
+          ticks: { callback: function(v) { const max = this.chart.scales.y.max; if (max < 1e5) return v.toLocaleString(); return v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e4 ? Math.round(v/1e4).toLocaleString()+'만' : v.toLocaleString(); } } }
       }
     }
   });
@@ -794,7 +794,7 @@ function updateAgeBar() {
       scales: {
         x: { stacked: true, grid: { display: false } },
         y: { stacked: true, grid: { color: '#f1f5f9' },
-          ticks: { callback: v => (v >= 1e4 ? (v/1e4).toFixed(0)+'만' : v) } }
+          ticks: { callback: function(v) { const max = this.chart.scales.y.max; return max < 1e5 ? v.toLocaleString() : v >= 1e4 ? Math.round(v/1e4).toLocaleString()+'만' : v; } } }
       }
     }
   });
@@ -839,7 +839,7 @@ function updateAgeCatBar() {
       scales: {
         x: { stacked: true, grid: { display: false } },
         y: { stacked: true, grid: { color: '#f1f5f9' },
-          ticks: { callback: v => v >= 1e4 ? (v/1e4).toFixed(0)+'만' : v } }
+          ticks: { callback: function(v) { const max = this.chart.scales.y.max; return max < 1e5 ? v.toLocaleString() : v >= 1e4 ? Math.round(v/1e4).toLocaleString()+'만' : v; } } }
       }
     }
   });
