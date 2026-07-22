@@ -310,6 +310,8 @@ URL : https://jumin.mois.go.kr/ageStatMonth.do
         </div>
         <div id="panel-map" class="chart-card" style="display:none">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+            <label style="font-size:12px;color:#64748b" id="boundary-label" style="display:none">경계 데이터:</label>
+            <select id="sel-boundary" style="display:none" onchange="onBoundaryChange()"></select>
             <label style="font-size:12px;color:#64748b">기준 연도:</label>
             <select id="sel-map-year" onchange="updateMapColors()"></select>
             <div class="seg-btn">
@@ -1096,6 +1098,27 @@ function loadPreloadedData(data) {
 }
 
 // GeoJSON 클라이언트 처리 (좌표 반올림 + 면적 계산)
+async function loadBoundaryFile(fname) {
+  setStatus('경계 데이터 로드 중...');
+  const res = await fetch(`data_boundary/${fname}`);
+  if (!res.ok) throw new Error(`${fname} 로드 실패`);
+  const raw = await res.json();
+  setStatus('경계 데이터 처리 중...');
+  window.GEO_DATA = processRawGeoJSON(raw);
+}
+
+async function onBoundaryChange() {
+  const fname = document.getElementById('sel-boundary').value;
+  try {
+    await loadBoundaryFile(fname);
+    // 지도가 열려 있으면 재렌더링
+    if (currentSection === 'map' && _mapReady) updateMapColors();
+    setStatus(`경계 데이터 변경됨: ${fname}`);
+  } catch(e) {
+    setStatus('⚠️ 경계 데이터 로드 실패: ' + e.message);
+  }
+}
+
 function processRawGeoJSON(raw) {
   function round(obj, dp=5) {
     if (typeof obj === 'number') return parseFloat(obj.toFixed(dp));
@@ -1158,17 +1181,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       )
     );
     csvBuffers.forEach(buf => processCSVText(new TextDecoder('euc-kr').decode(buf)));
-    // GeoJSON 로드 & 처리
-    setStatus('경계 데이터 로드 중...');
-    // data_boundary 폴더에서 GeoJSON 파일 자동 탐지
+    // data_boundary 폴더 파일 목록 조회
+    setStatus('경계 데이터 목록 확인 중...');
     const boundaryApi = await fetch('https://api.github.com/repos/junsoo91/Tools/contents/data_boundary').then(r => r.json());
-    const geoFile = boundaryApi.find(f => f.name.endsWith('.geojson'));
-    if (!geoFile) throw new Error('GeoJSON 파일을 찾을 수 없습니다');
-    const geoRes = await fetch(`${DATA_BOUNDARY}/${geoFile.name}`);
-    if (!geoRes.ok) throw new Error('GeoJSON 로드 실패');
-    const rawGeo = await geoRes.json();
-    setStatus('경계 데이터 처리 중...');
-    window.GEO_DATA = processRawGeoJSON(rawGeo);
+    const geoFiles = boundaryApi.filter(f => f.name.endsWith('.geojson')).map(f => f.name).sort();
+    if (!geoFiles.length) throw new Error('GeoJSON 파일을 찾을 수 없습니다');
+    // 파일이 2개 이상이면 드롭다운 표시
+    if (geoFiles.length > 1) {
+      const sel = document.getElementById('sel-boundary');
+      sel.innerHTML = geoFiles.map(n => `<option value="${n}">${n}</option>`).join('');
+      sel.style.display = '';
+      document.getElementById('boundary-label').style.display = '';
+    }
+    // 첫 번째 파일 자동 로드
+    await loadBoundaryFile(geoFiles[0]);
 
     // UI 초기화
     loadedFiles = [{ name: `원본 데이터 (2008~2025)`, years: [...loadedYears] }];
