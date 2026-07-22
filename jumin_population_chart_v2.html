@@ -1141,15 +1141,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     '202312_202512_연령별인구현황_연간.csv'
   ];
   try {
-    // CSV 순차 로드 & 파싱
-    for (let i=0; i<CSV_FILES.length; i++) {
-      setStatus(`인구 데이터 로드 중... (${i+1}/${CSV_FILES.length})`);
-      const res = await fetch(`${DATA_POP}/${CSV_FILES[i]}`);
-      if (!res.ok) throw new Error(`${CSV_FILES[i]} 로드 실패`);
-      const buf = await res.arrayBuffer();
-      const text = new TextDecoder('euc-kr').decode(buf);
-      processCSVText(text);
-    }
+    // CSV 병렬 로드 & 파싱
+    setStatus('인구 데이터 로드 중...');
+    const csvBuffers = await Promise.all(
+      CSV_FILES.map(f => fetch(`${DATA_POP}/${f}`)
+        .then(r => { if (!r.ok) throw new Error(`${f} 로드 실패`); return r.arrayBuffer(); })
+      )
+    );
+    csvBuffers.forEach(buf => processCSVText(new TextDecoder('euc-kr').decode(buf)));
     // GeoJSON 로드 & 처리
     setStatus('경계 데이터 로드 중...');
     const geoRes = await fetch(`${DATA_BOUNDARY}/HangJeongDong_vworld.geojson`);
