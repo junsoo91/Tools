@@ -50,8 +50,9 @@ URL : https://jumin.mois.go.kr/ageStatMonth.do
 https://junsoo91.github.io/Tools/jumin_population_chart_v2.html
 
 [새 연도 추가 방법]
-위 단계에 따라 새 CSV를 받은 뒤 GitHub 레포(junsoo91/Tools)의 data_pop/ 폴더에 업로드하면
-다음 접속 시 자동으로 로드됩니다. HTML 수정 불필요.
+1. 새 CSV를 GitHub 레포(junsoo91/Tools)의 data_pop/ 폴더에 업로드
+2. data_pop/manifest.json 파일에 새 파일명 추가 (GitHub 웹에서 직접 편집 가능)
+→ 다음 접속 시 자동으로 로드됩니다.
 ================================================================
 -->
 <meta charset="UTF-8">
@@ -202,9 +203,12 @@ https://junsoo91.github.io/Tools/jumin_population_chart_v2.html
         </ol>
       </div>
       <div class="guide-section">
-        <h4>④ GitHub data_pop/ 폴더에 업로드</h4>
-        <p>다운로드한 CSV 파일을 <strong>github.com/junsoo91/Tools</strong> 레포의 <code>data_pop/</code> 폴더에 업로드하면,<br>
-        다음 접속 시 자동으로 반영됩니다. HTML 수정 불필요.</p>
+        <h4>④ GitHub data_pop/ 폴더에 업로드 + manifest.json 수정</h4>
+        <p>
+          1. <strong>github.com/junsoo91/Tools</strong> → <code>data_pop/</code> 폴더에 CSV 파일 업로드<br>
+          2. <code>data_pop/manifest.json</code> 파일에 새 파일명 추가 (GitHub 웹에서 직접 편집)<br>
+          → 다음 접속 시 자동으로 반영됩니다.
+        </p>
       </div>
       <div class="guide-section">
         <h4>⑤ 예상 파일 규격</h4>
