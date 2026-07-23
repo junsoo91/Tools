@@ -1529,12 +1529,20 @@ function renderMapTable() {
     else if (level === 'sigungu') feats = feats.filter(f=>f.c.startsWith(currentCode.slice(0,5)));
     else feats = feats.filter(f=>f.c===currentCode);
   }
-  const rows = feats.map(f => {
-    const pop = regionData.get(f.c)?.years.get(year)?.['계']?.total ?? 0;
-    const den = f.a ? Math.round(pop/f.a) : '-';
-    return `<tr><td>${f.n}</td><td>${fmt(pop)}</td><td>${den}</td><td>${f.a}</td></tr>`;
-  }).sort((a,b)=>{ const pa=parseInt(a.split('<td>')[2].replace(/,/g,'')||0), pb=parseInt(b.split('<td>')[2].replace(/,/g,'')||0); return pb-pa; }).join('');
-  return `<table><thead><tr><th>지역</th><th>인구수</th><th>인구밀도</th><th>면적(㎢)</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const rowData = feats.map(f => {
+    const yd = regionData.get(f.c)?.years.get(year)?.['계'];
+    const pop = yd?.total ?? 0;
+    const ages = yd?.ages ?? [];
+    // 65세 이상: indices 13~20
+    const elderly = ages.slice(13, 21).reduce((s, v) => s + (v||0), 0);
+    const elderlyPct = pop ? (elderly / pop * 100).toFixed(1) : '0.0';
+    const den = f.a ? Math.round(pop / f.a) : 0;
+    return { name: f.n, pop, den, area: f.a, elderly, elderlyPct };
+  }).sort((a, b) => b.den - a.den);
+  const rows = rowData.map(r =>
+    `<tr><td>${r.name}</td><td>${fmt(r.pop)}</td><td>${r.den.toLocaleString()}</td><td>${r.area}</td><td>${fmt(r.elderly)}</td><td>${r.elderlyPct}%</td></tr>`
+  ).join('');
+  return `<table><thead><tr><th>지역</th><th>인구수</th><th>인구밀도</th><th>면적(㎢)</th><th>65세 이상</th><th>고령 비율</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function downloadTableCSV() {
